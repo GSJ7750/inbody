@@ -6,4 +6,6 @@
         +<br/>
         추가
     </string>
+    <string name="take">사진<br/>촬영</string>
+    <string name="album">앨범</string>
 </resources>
