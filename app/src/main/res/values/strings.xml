@@ -8,4 +8,6 @@
     </string>
     <string name="take">사진<br/>촬영</string>
     <string name="album">앨범</string>
+    <string name="before">전</string>
+    <string name="after">후</string>
 </resources>
