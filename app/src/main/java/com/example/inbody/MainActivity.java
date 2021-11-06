@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
@@ -27,8 +28,10 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 public class MainActivity extends AppCompatActivity {
@@ -59,7 +62,13 @@ public class MainActivity extends AppCompatActivity {
     boolean isEnable = false;
     Button btn_save;
 
+
+    int T_PIC1 = 1;
+    int T_PIC2 = 2;
+    int G_PIC1 = 4;
+    int G_PIC2 = 5;
     int CROP_PIC = 3;
+
     Uri picUri;
     int num;
 
@@ -142,6 +151,7 @@ public class MainActivity extends AppCompatActivity {
             @SuppressLint("NonConstantResourceId")
             @Override
             public void onClick(View v) {
+                Intent i;
                 switch (v.getId()){
                     case R.id.btn_add1:
                         setGone(new Button[] {btn_add1});
@@ -154,20 +164,23 @@ public class MainActivity extends AppCompatActivity {
                         break;
 
                     case R.id.btn_camera1:
-                        Intent i1 = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                        startActivityForResult(i1, 1);
-                        setGone(new LinearLayout[] {lo_btns1});
-                        setVisible(new ConstraintLayout[] {lo_iv1});
+                        i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                        startActivityForResult(i, T_PIC1);
                         break;
                     case R.id.btn_camera2:
-                        Intent i2 = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                        startActivityForResult(i2, 2);
-                        setGone(new LinearLayout[] {lo_btns2});
-                        setVisible(new ConstraintLayout[] {lo_iv2});
+                        i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                        startActivityForResult(i, T_PIC2);
                         break;
                     case R.id.btn_album1:
+                        i = new Intent(Intent.ACTION_PICK);
+                        i.setType(MediaStore.Images.Media.CONTENT_TYPE);
+                        startActivityForResult(i, G_PIC1);
+
                         break;
                     case R.id.btn_album2:
+                        i = new Intent(Intent.ACTION_PICK);
+                        i.setType(MediaStore.Images.Media.CONTENT_TYPE);
+                        startActivityForResult(i, G_PIC2);
                         break;
                     case R.id.btn_save:
                         BitmapDrawable bitmapDrawable1 = (BitmapDrawable)iv1.getDrawable();
@@ -176,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
                         Bitmap bitmap2 = bitmapDrawable2.getBitmap();
                         savePic(bitmap1, bitmap2, String.valueOf(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)));
                         Log.d("saved",String.valueOf(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)));
-                        Toast.makeText(getApplicationContext(), "사진을 저장중입니다", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "사진을 저장중입니다 ", Toast.LENGTH_SHORT).show();
                         break;
                 }
             }
@@ -195,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if(resultCode == RESULT_OK){
 
-            if(requestCode == 1){
+            if(requestCode == T_PIC1){
                 Bundle extras = data.getExtras();
                 Bitmap imageBitmap = (Bitmap) extras.get("data");
                 picUri = getImageUri(this, imageBitmap);
@@ -205,7 +218,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 performCrop();
 
-            }else if(requestCode == 2){
+            }else if(requestCode == T_PIC2){
                 Bundle extras = data.getExtras();
                 Bitmap imageBitmap = (Bitmap) extras.get("data");
                 picUri = getImageUri(this, imageBitmap);
@@ -220,12 +233,38 @@ public class MainActivity extends AppCompatActivity {
                 Bitmap image = (Bitmap) extras.getParcelable("data");
                 if(num == 1){
                     iv1.setImageBitmap(image);
+                    setGone(new LinearLayout[] {lo_btns1});
+                    setVisible(new ConstraintLayout[] {lo_iv1});
                 }else{
                     iv2.setImageBitmap(image);
+                    setGone(new LinearLayout[] {lo_btns2});
+                    setVisible(new ConstraintLayout[] {lo_iv2});
                 }
                 if(pic1 && pic2){
                     isEnable = true;
                     btn_save.setEnabled(true);
+                }
+            }else if(requestCode == G_PIC1){
+                try {
+                    picUri = data.getData();
+                    InputStream imageStream = getContentResolver().openInputStream(picUri);
+                    Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+                    iv1.setImageBitmap(selectedImage);
+                    setGone(new LinearLayout[] {lo_btns1});
+                    setVisible(new ConstraintLayout[] {lo_iv1});
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }else if(requestCode == G_PIC2){
+                try {
+                    picUri = data.getData();
+                    InputStream imageStream = getContentResolver().openInputStream(picUri);
+                    Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+                    iv2.setImageBitmap(selectedImage);
+                    setGone(new LinearLayout[] {lo_btns2});
+                    setVisible(new ConstraintLayout[] {lo_iv2});
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
                 }
 
             }
