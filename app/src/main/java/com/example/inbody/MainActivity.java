@@ -207,7 +207,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(resultCode == RESULT_OK){
-
             if(requestCode == T_PIC1){
                 Bundle extras = data.getExtras();
                 Bitmap imageBitmap = (Bitmap) extras.get("data");
@@ -217,7 +216,6 @@ public class MainActivity extends AppCompatActivity {
                     pic1 = true;
                 }
                 performCrop();
-
             }else if(requestCode == T_PIC2){
                 Bundle extras = data.getExtras();
                 Bitmap imageBitmap = (Bitmap) extras.get("data");
@@ -227,7 +225,32 @@ public class MainActivity extends AppCompatActivity {
                     pic2 = true;
                 }
                 performCrop();
-
+            }else if(requestCode == G_PIC1){
+                try {
+                    picUri = data.getData();
+                    InputStream imageStream = getContentResolver().openInputStream(picUri);
+                    Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+                    if(selectedImage != null){
+                        num = 1;
+                        pic1 = true;
+                    }
+                    performCrop();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }else if(requestCode == G_PIC2){
+                try {
+                    picUri = data.getData();
+                    InputStream imageStream = getContentResolver().openInputStream(picUri);
+                    Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+                    if(selectedImage != null){
+                        num = 2;
+                        pic2 = true;
+                    }
+                    performCrop();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
             }else if(requestCode == CROP_PIC){
                 Bundle extras = data.getExtras();
                 Bitmap image = (Bitmap) extras.getParcelable("data");
@@ -244,29 +267,6 @@ public class MainActivity extends AppCompatActivity {
                     isEnable = true;
                     btn_save.setEnabled(true);
                 }
-            }else if(requestCode == G_PIC1){
-                try {
-                    picUri = data.getData();
-                    InputStream imageStream = getContentResolver().openInputStream(picUri);
-                    Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
-                    iv1.setImageBitmap(selectedImage);
-                    setGone(new LinearLayout[] {lo_btns1});
-                    setVisible(new ConstraintLayout[] {lo_iv1});
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-            }else if(requestCode == G_PIC2){
-                try {
-                    picUri = data.getData();
-                    InputStream imageStream = getContentResolver().openInputStream(picUri);
-                    Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
-                    iv2.setImageBitmap(selectedImage);
-                    setGone(new LinearLayout[] {lo_btns2});
-                    setVisible(new ConstraintLayout[] {lo_iv2});
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-
             }
         }
     }
