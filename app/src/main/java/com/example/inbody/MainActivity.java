@@ -28,6 +28,7 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -35,42 +36,41 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public class MainActivity extends AppCompatActivity {
-    Button btn_add1;
-    Button btn_add2;
+    private Button btn_add1;
+    private Button btn_add2;
 
-    Button btn_camera1;
-    Button btn_camera2;
-    Button btns1[] = new Button[2];
+    private Button btn_camera1;
+    private Button btn_camera2;
+    private final Button[] btns1 = new Button[2];
 
-    Button btn_album1;
-    Button btn_album2;
-    Button btns2[] = new Button[2];
+    private Button btn_album1;
+    private Button btn_album2;
+    private final Button[] btns2 = new Button[2];
 
-    ImageView iv1;
-    ImageView iv2;
+    private ImageView iv1;
+    private ImageView iv2;
 
-    LinearLayout lo_btns1;
-    LinearLayout lo_btns2;
-    ConstraintLayout lo_iv1;
-    ConstraintLayout lo_iv2;
-    String[] permission_list = {
+    private LinearLayout lo_btns1;
+    private LinearLayout lo_btns2;
+    private ConstraintLayout lo_iv1;
+    private ConstraintLayout lo_iv2;
+    private final String[] permission_list = {
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_EXTERNAL_STORAGE
     };
-    boolean pic1 = false;
-    boolean pic2 = false;
-    boolean isEnable = false;
-    Button btn_save;
+    private boolean pic1 = false;
+    private boolean pic2 = false;
+    private Button btn_save;
 
 
-    int T_PIC1 = 1;
-    int T_PIC2 = 2;
-    int G_PIC1 = 4;
-    int G_PIC2 = 5;
-    int CROP_PIC = 3;
+    private final int T_PIC1 = 1;
+    private final int T_PIC2 = 2;
+    private final int G_PIC1 = 4;
+    private final int G_PIC2 = 5;
+    private final int CROP_PIC = 3;
 
-    Uri picUri;
-    int num;
+    private Uri picUri;
+    private int num;
 
 
 
@@ -82,17 +82,14 @@ public class MainActivity extends AppCompatActivity {
         this.InitializeView();
         this.setListner();
     }
-    public void checkPermission(){
-        //현재 안드로이드 버전이 6.0미만이면 메서드를 종료한다.
+    private void checkPermission(){
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
             return;
 
         for(String permission : permission_list){
-            //권한 허용 여부를 확인한다.
             int chk = checkCallingOrSelfPermission(permission);
 
             if(chk == PackageManager.PERMISSION_DENIED){
-                //권한 허용을여부를 확인하는 창을 띄운다
                 requestPermissions(permission_list,0);
             }
         }
@@ -104,11 +101,10 @@ public class MainActivity extends AppCompatActivity {
         {
             for(int i=0; i<grantResults.length; i++)
             {
-                //허용됬다면
                 if(grantResults[i]==PackageManager.PERMISSION_GRANTED){
                 }
                 else {
-                    Toast.makeText(getApplicationContext(),"앱권한설정하세요",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(),"권한 오류",Toast.LENGTH_LONG).show();
                     finish();
                 }
             }
@@ -117,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    public void InitializeView()
+    private void InitializeView()
     {
         btn_add1 = (Button)findViewById(R.id.btn_add1);
         btn_add2 = (Button)findViewById(R.id.btn_add2);
@@ -146,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
-    public void setListner(){
+    private void setListner(){
         View.OnClickListener Listner = new View.OnClickListener() {
             @SuppressLint("NonConstantResourceId")
             @Override
@@ -211,8 +207,8 @@ public class MainActivity extends AppCompatActivity {
                 Bundle extras = data.getExtras();
                 Bitmap imageBitmap = (Bitmap) extras.get("data");
                 picUri = getImageUri(this, imageBitmap);
-                num = 1;
                 if(imageBitmap != null){
+                    num = 1;
                     pic1 = true;
                 }
                 performCrop();
@@ -220,8 +216,8 @@ public class MainActivity extends AppCompatActivity {
                 Bundle extras = data.getExtras();
                 Bitmap imageBitmap = (Bitmap) extras.get("data");
                 picUri = getImageUri(this, imageBitmap);
-                num = 2;
                 if(imageBitmap != null) {
+                    num = 2;
                     pic2 = true;
                 }
                 performCrop();
@@ -264,25 +260,21 @@ public class MainActivity extends AppCompatActivity {
                     setVisible(new ConstraintLayout[] {lo_iv2});
                 }
                 if(pic1 && pic2){
-                    isEnable = true;
                     btn_save.setEnabled(true);
                 }
             }
         }
     }
-    public Uri getImageUri(Context inContext, Bitmap inImage) {
+    private Uri getImageUri(Context inContext, Bitmap inImage) {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         inImage.compress(Bitmap.CompressFormat.PNG, 100, bytes);
         String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
         return Uri.parse(path);
     }
     private void performCrop() {
-        // take care of exceptions
         try {
-            // call the standard crop action intent (the user device may not
-            // support it)
             Intent cropIntent = new Intent("com.android.camera.action.CROP");
-            // indicate image type and Uri
+
             cropIntent.setDataAndType(picUri, "image/*");
             cropIntent.putExtra("crop", "true");
             cropIntent.putExtra("aspectX", 9);
@@ -291,27 +283,37 @@ public class MainActivity extends AppCompatActivity {
             cropIntent.putExtra("outputY", 420);
             cropIntent.putExtra("return-data", true);
             startActivityForResult(cropIntent, CROP_PIC);
-        }
-        // respond to users whose devices do not support the crop action
-        catch (ActivityNotFoundException anfe) {
+        }catch (ActivityNotFoundException anfe) {
             Toast toast = Toast
                     .makeText(this, "This device doesn't support the crop action!", Toast.LENGTH_SHORT);
             toast.show();
         }
     }
 
-    public void setGone(View[] vs) {
+    private void setGone(View[] vs) {
         for (View v : vs) {
             v.setVisibility(View.GONE);
         }
     }
-    public void setVisible(View[] vs){
+    private void setVisible(View[] vs){
         for (View v : vs) {
             v.setVisibility(View.VISIBLE);
         }
     }
+    private static boolean fileDelete(String filePath){
+        try {
+            File file = new File(filePath);
 
-    public void savePic(Bitmap c, Bitmap s,String loc) {
+            if(file.exists()) {
+                file.delete();
+                return true;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return false;
+    }
+    private void savePic(Bitmap c, Bitmap s,String loc) {
         Bitmap cs = null;
 
         int width, height = 0;
@@ -332,10 +334,9 @@ public class MainActivity extends AppCompatActivity {
         comboImage.drawBitmap(c, 0f, 0f, null);
         comboImage.drawBitmap(s, c.getWidth(), 0f, null);
 
-
-        String tmpImg = String.valueOf(System.currentTimeMillis()) + ".png";
-
+        String tmpImg = "/BeforeNAfter_0.png";
         OutputStream os = null;
+        fileDelete(loc+tmpImg);
         try {
             os = new FileOutputStream(loc + tmpImg);
             cs.compress(Bitmap.CompressFormat.PNG, 100, os);
